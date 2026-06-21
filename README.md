@@ -19,6 +19,10 @@ To run the terminal engine at maximum desktop-class framerates, it relies on the
 
 ---
 
+[![FastTerminal3D Showcase](docs/screenshot.png)](docs/screenshot.png)
+
+---
+
 ## 📚 Documentation & Guides
 
 Learn more about the inner workings of FastTerminal3D and its architectural design:
