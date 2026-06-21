@@ -39,3 +39,61 @@ You can try the pre-configured Windows batch files right away:
 - `run-wolf-terminal-demo.bat` — The Wolfenstein 3D interactive terminal map viewer.
 
 > **Note:** The terminal must support 24-bit True Color and UTF-8 encoding (e.g., Windows Terminal, Alacritty, or modern iTerm2).
+
+---
+
+## Installation
+
+### Option 1: Maven (JitPack)
+
+Add the JitPack repository and the library dependencies to your pom.xml:
+
+`xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastTerminal3D</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastSoftware3D</artifactId>
+        <version>main-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastTerminal</artifactId>
+        <version>0.1.3</version>
+    </dependency>
+    <dependency>
+        <groupId>com.github.andrestubbe</groupId>
+        <artifactId>FastCore</artifactId>
+        <version>0.1.0</version>
+    </dependency>
+</dependencies>
+`
+
+### Option 2: Gradle
+
+Add JitPack to your repositories and include the library dependencies:
+
+`groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.andrestubbe:FastTerminal3D:0.1.0'
+    implementation 'com.github.andrestubbe:FastSoftware3D:main-SNAPSHOT'
+    implementation 'com.github.andrestubbe:FastTerminal:0.1.3'
+    implementation 'com.github.andrestubbe:FastCore:0.1.0'
+}
+`
+
