@@ -1,4 +1,4 @@
-package fastterminal3d;
+package fastterminal3d.demo;
 
 import fastansi.FastANSI;
 import fastterminal.FastTerminal;
@@ -8,6 +8,7 @@ import fastkeyboard.FastKeyboard;
 import fastkeyboard.FastKeyboardImpl;
 import fastmouse.FastMouse;
 import fastmouse.FastMouseListener;
+import fastterminal3d.FastTerminal3D;
 
 import fastsoftware3d.camera.Camera;
 import fastsoftware3d.camera.CameraController;
