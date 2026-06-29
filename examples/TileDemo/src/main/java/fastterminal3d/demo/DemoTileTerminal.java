@@ -45,7 +45,7 @@ import java.util.Arrays;
  *   +/-         - FOV
  *   ESC         - quit
  */
-public class DemoWolfTerminal {
+public class DemoTileTerminal {
 
     // Scene scale: room.obj uses Blender units (0..~20). Multiply by SCALE.
     private static final float SCALE = 100.0f;
@@ -91,7 +91,7 @@ public class DemoWolfTerminal {
         mouse.startListening(new FastMouseListener() {
             @Override public void onMouseMove(long h, int dx, int dy, int ax, int ay) {
                 if (FastTerminal.isTerminalFocused())
-                    synchronized (DemoWolfTerminal.class) { controller.onMouseMove(dx, dy, true); }
+                    synchronized (DemoTileTerminal.class) { controller.onMouseMove(dx, dy, true); }
             }
             @Override public void onMouseButton(long h, int btn, boolean pressed) {}
             @Override public void onMouseWheel(long h, int delta) {}
@@ -122,6 +122,8 @@ public class DemoWolfTerminal {
 
         // Scene and initial buffers
         controller.settings.ssaaFactor = SSAA;
+        controller.settings.hoverboardMode = false;
+        fastsoftware3d.rasterizer.NativeRasterizer.mipmapMode = 0;
         initScene();
         allocateBuffers(cols, rows);
 
@@ -130,11 +132,17 @@ public class DemoWolfTerminal {
             if (!FastTerminal.isTerminalFocused()) return;
             boolean shouldRealloc = controller.onKey(vKey, isPressed);
             if (shouldRealloc) {
-                synchronized (DemoWolfTerminal.class) {
+                synchronized (DemoTileTerminal.class) {
                     allocateBuffers(cols, rows);
                 }
             }
             if (vKey == 0x1B && isPressed) running = false;
+            if (vKey == 0x4F && isPressed) { // 'O' key
+                synchronized (DemoTileTerminal.class) {
+                    useOctree = !useOctree;
+                    scene = useOctree ? sceneOctree : sceneFlat;
+                }
+            }
         });
 
         // Render loop
@@ -154,7 +162,7 @@ public class DemoWolfTerminal {
             if (termRenderer.resize(sz[0], sz[1])) {
                 cols = sz[0]; rows = sz[1];
                 canvas.resize(cols, rows);
-                synchronized (DemoWolfTerminal.class) { allocateBuffers(cols, rows); }
+                synchronized (DemoTileTerminal.class) { allocateBuffers(cols, rows); }
             }
 
             double time      = (System.currentTimeMillis() - suiteStart) / 1000.0;
@@ -173,7 +181,7 @@ public class DemoWolfTerminal {
                 lastFpsUpdateTime = nowMs;
             }
 
-            synchronized (DemoWolfTerminal.class) {
+            synchronized (DemoTileTerminal.class) {
                 // Clear to black background
                 Arrays.fill(renderPixels, 0x000000);
                 activeRenderer.clear();
@@ -184,7 +192,7 @@ public class DemoWolfTerminal {
                 activeRenderer.getPipeline().postProcess();
 
                 // Downsample SSAA render buffer to terminal half-block cells
-                fastterminal3d.FastTerminal3DRenderer.render(renderPixels, cols * controller.getSsaaFactor(), rows * 2 * controller.getSsaaFactor(), canvas, cols, rows, controller.getSsaaFactor(), controller.isAsciiMode());
+                writeHalfBlocks(renderPixels, cols * controller.getSsaaFactor(), rows * 2 * controller.getSsaaFactor(), canvas, cols, rows, controller.getSsaaFactor());
             }
 
             int mode = fastsoftware3d.rasterizer.NativeRasterizer.mipmapMode;
@@ -214,8 +222,40 @@ public class DemoWolfTerminal {
     // ------------------------------------------------------------------
     // Scene init
     // ------------------------------------------------------------------
+    private static fastsoftware3d.scene.Scene sceneFlat;
+    private static fastsoftware3d.scene.Scene sceneOctree;
+    private static boolean useOctree = true;
+
     private static void initScene() {
-        scene = fastsoftware3d.scene.SceneFactory.createWolfScene(SCALE, false);
+        sceneFlat = new fastsoftware3d.scene.Scene();
+        sceneOctree = new fastsoftware3d.scene.Scene();
+
+        fastsoftware3d.scene.SceneFactory.loadedCollisionModels.clear();
+
+        int i = 1;
+        while (true) {
+            String suffix = String.format("%03d", i);
+            String objPath = "C:\\Users\\andre\\Documents\\demo\\tile." + suffix + ".obj";
+            String pngPath = "C:\\Users\\andre\\Documents\\demo\\light." + suffix + ".png";
+            
+            if (!new java.io.File(objPath).exists() || !new java.io.File(pngPath).exists()) {
+                break;
+            }
+            
+            fastsoftware3d.scene.SceneFactory.appendCustomModel(sceneFlat, objPath, pngPath, SCALE, false);
+            fastsoftware3d.scene.SceneFactory.appendCustomModel(sceneOctree, objPath, pngPath, SCALE, true);
+            i++;
+        }
+
+        scene = useOctree ? sceneOctree : sceneFlat;
+
+        if (!fastsoftware3d.scene.SceneFactory.loadedCollisionModels.isEmpty()) {
+            fastsoftware3d.physics.WallCollider collider = new fastsoftware3d.physics.WallCollider();
+            for (fastsoftware3d.model.ObjLoader.ModelData m : fastsoftware3d.scene.SceneFactory.loadedCollisionModels) {
+                collider.addModel(m);
+            }
+            controller.setCollisionSystem(collider);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -238,5 +278,82 @@ public class DemoWolfTerminal {
     // Half-block downsampling: each terminal cell = top half + bottom half
     // Unicode UPPER HALF BLOCK (▀) fg=top color, bg=bottom color
     // ------------------------------------------------------------------
-            // (Removed writeHalfBlocks method implementation, moved to FastTerminal3DRenderer)
+    private static void writeHalfBlocks(int[] src, int srcW, int srcH,
+                                        FastTerminalScene canvas,
+                                        int cols, int rows, int ssaa) {
+        for (int row = 0; row < rows; row++) {
+            int yTop = row * 2 * ssaa;
+            int yBot = (row * 2 + 1) * ssaa;
+
+            for (int col = 0; col < cols; col++) {
+                int xBase = col * ssaa;
+
+                // Average top block
+                int rT = 0, gT = 0, bT = 0;
+                int countT = 0;
+                for (int dy = 0; dy < ssaa; dy++) {
+                    int yy = yTop + dy;
+                    if (yy < 0 || yy >= srcH) continue;
+                    int rowOff = yy * srcW + xBase;
+                    for (int dx = 0; dx < ssaa; dx++) {
+                        int xx = xBase + dx;
+                        if (xx < 0 || xx >= srcW) continue;
+                        int srcIdx = rowOff + dx;
+                        if (srcIdx >= 0 && srcIdx < src.length) {
+                            int px = src[srcIdx];
+                            rT += (px >> 16) & 0xFF;
+                            gT += (px >>  8) & 0xFF;
+                            bT +=  px        & 0xFF;
+                            countT++;
+                        }
+                    }
+                }
+                int topC = 0;
+                if (countT > 0) {
+                    topC = ((rT / countT) << 16) | ((gT / countT) << 8) | (bT / countT);
+                }
+
+                // Average bottom block
+                int rB = 0, gB = 0, bB = 0;
+                int countB = 0;
+                for (int dy = 0; dy < ssaa; dy++) {
+                    int yy = yBot + dy;
+                    if (yy < 0 || yy >= srcH) continue;
+                    int rowOff = yy * srcW + xBase;
+                    for (int dx = 0; dx < ssaa; dx++) {
+                        int xx = xBase + dx;
+                        if (xx < 0 || xx >= srcW) continue;
+                        int srcIdx = rowOff + dx;
+                        if (srcIdx >= 0 && srcIdx < src.length) {
+                            int px = src[srcIdx];
+                            rB += (px >> 16) & 0xFF;
+                            gB += (px >>  8) & 0xFF;
+                            bB +=  px        & 0xFF;
+                            countB++;
+                        }
+                    }
+                }
+                int botC = 0;
+                if (countB > 0) {
+                    botC = ((rB / countB) << 16) | ((gB / countB) << 8) | (bB / countB);
+                }
+
+                if (controller.isAsciiMode()) {
+                    int r = 0, g = 0, b = 0;
+                    int totalCount = countT + countB;
+                    if (totalCount > 0) {
+                        r = (rT + rB) / totalCount;
+                        g = (gT + gB) / totalCount;
+                        b = (bT + bB) / totalCount;
+                    }
+                    int color = (r << 16) | (g << 8) | b;
+                    float brightness = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f;
+                    char glyph = FastGlyphDensity.getGlyphForOpacity(brightness);
+                    canvas.writeCell(col, row, glyph, color, 0x000000);
+                } else {
+                    canvas.writeCell(col, row, '\u2580', topC, botC); // ▀
+                }
+            }
+        }
+    }
 }
