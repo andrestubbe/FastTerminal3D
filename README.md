@@ -15,7 +15,7 @@ To achieve a completely responsive, zero-latency desktop-class terminal experien
 * ⚡ **[FastSoftware3D](https://github.com/andrestubbe/FastSoftware3D)** — Provides the foundational math, clipping, shading, and multi-threaded triangle rasterization engine.
 * 🚀 **[FastTerminal](https://github.com/andrestubbe/FastTerminal)** — Implements the native zero-copy ANSI viewport output and terminal scaling.
 
----
+Watch Demo (YouTube) | Watch JMH Benchmark (YouTube)
 
 [![FastTerminal3D Showcase](docs/screenshot.png)](docs/screenshot.png)
 
