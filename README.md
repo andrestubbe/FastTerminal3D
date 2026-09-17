@@ -58,14 +58,14 @@ Standard terminal applications operate on a strictly 2D character-grid layout. P
 
 FastTerminal3D bridges the AVX2/multi-threaded rasterization pipeline of `FastSoftware3D` with the zero-copy C++ blitter of `FastTerminal`. It applies native multi-core Super-Sample Anti-Aliasing (SSAA) and direct half-block (`▀` / `▄`) color quantization to output silky smooth 60+ FPS 3D scenes directly into any True Color terminal:
 
-| Feature | Pure Java ASCII 3D | Curses / Lanterna Wrappers | FastTerminal3D |
+| Feature | Pure Java ASCII 3D | Term3D (C++ / Curses) | FastTerminal3D |
 |:---|:---|:---|:---|
-| **Color Fidelity** | 1-bit or 16-color ANSI | 16 / 256 Colors | **24-bit True Color (SSAA)** |
-| **Rasterization Engine** | Pure Java (Single-thread) | Software CPU cell blit | **SIMD AVX2 + Multi-Threaded Tiling** |
-| **Resolution Density** | 1 character per pixel | 1 cell per pixel | Half-block (2 px/cell) + SSAA |
-| **Z-Buffering / Depth** | None / coarse `float[]` | ❌ None | **32-bit Native Z-Buffer** |
-| **GC Pressure** | Extreme (String per char) | High (Cell object churn) | **0 bytes / frame (Zero-Copy)** |
-| **Target Frame Rate** | 10–20 FPS | 15–30 FPS | **60+ FPS Constant** |
+| **Color Fidelity** | 1-bit or 16-color ANSI | 256 Colors | **24-bit True Color (SSAA)** |
+| **Rasterization Engine** | Pure Java (Single-thread) | Software CPU rasterizer | **SIMD AVX2 + Multi-Threaded Tiling** |
+| **Resolution Density** | 1 character per pixel | Half-block emulation | **Half-block (2 px/cell) + SSAA** |
+| **Z-Buffering / Depth** | None or coarse `float[]` | CPU 16-bit depth | **32-bit Native Z-Buffer** |
+| **GC Pressure** | Extreme (String per char) | Moderate (IPC / wrappers) | **0 bytes / frame (Zero-Copy)** |
+| **Target Frame Rate** | 10–20 FPS | 20–35 FPS | **60+ FPS Constant** |
 
 ---
 
