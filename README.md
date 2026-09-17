@@ -51,21 +51,21 @@ public class Demo {
 
 Standard terminal applications operate on a strictly 2D character-grid layout. Pushing real-time 3D environments into the terminal usually involves extreme compromises in rendering speed, texture quality, or depth resolution:
 
-* **Massive String Allocation Bottlenecks:** Naive terminal 3D engines format ANSI RGB strings on the JVM heap, triggering tens of thousands of object allocations per frame and stalling the GC.
-* **Low-Fidelity ASCII Hacks:** Most terminal renderers rely on 1-bit ASCII density ramps (`@%#*+=-:. `) with no depth-buffering or color preservation.
-* **Heavy Terminal Latency:** Flusing millions of uncompressed escape sequences over standard stdout chokes terminal emulators and causes screen tearing.
-* **CPU-Bound Single-Threaded Rasterization:** Pure Java software rasterizers cannot easily exploit AVX2 SIMD or hardware multi-core tiling, dropping frame rates to sub-15 FPS.
+1. **Massive String Allocation Bottlenecks**: Naive terminal 3D engines format ANSI RGB strings on the JVM heap, triggering tens of thousands of object allocations per frame and stalling the GC.
+2. **Low-Fidelity ASCII Hacks**: Most terminal renderers rely on 1-bit ASCII density ramps (`@%#*+=-:. `) with no depth-buffering or color preservation.
+3. **Heavy Terminal Latency**: Flushing millions of uncompressed escape sequences over standard stdout chokes terminal emulators and causes screen tearing.
+4. **CPU-Bound Single-Threaded Rasterization**: Pure Java software rasterizers cannot easily exploit AVX2 SIMD or hardware multi-core tiling, dropping frame rates to sub-15 FPS.
 
-FastTerminal3D bridges the AVX2/multi-threaded rasterization pipeline of `FastSoftware3D` with the zero-copy C++ blitter of `FastTerminal`. It applies native multi-core Super-Sample Anti-Aliasing (SSAA) and direct half-block (`▀` / `▄`) color quantization to output silky smooth 60+ FPS 3D scenes directly into any True Color terminal.
+FastTerminal3D bridges the AVX2/multi-threaded rasterization pipeline of `FastSoftware3D` with the zero-copy C++ blitter of `FastTerminal`. It applies native multi-core Super-Sample Anti-Aliasing (SSAA) and direct half-block (`▀` / `▄`) color quantization to output silky smooth 60+ FPS 3D scenes directly into any True Color terminal:
 
-| Feature | Pure Java ASCII 3D | Lanterna / JLine Text | Term3D / Curses Wrappers | FastTerminal3D |
-| :--- | :--- | :--- | :--- | :--- |
-| **Color Fidelity** | 1-bit or 16-color ANSI | 16/256 Colors | 256 Colors | 24-bit True Color (SSAA) |
-| **Rasterization Engine** | Pure Java (Single-thread) | Character cell blit | Software CPU | SIMD / AVX2 + Multi-Threaded Tiling |
-| **Resolution Density** | 1 character per pixel | 1 cell per pixel | Half-block emulation | Half-block (2 px/cell) + SSAA |
-| **Z-Buffering / Depth** | None or coarse float[] | None | CPU 16-bit | 32-bit Native Z-Buffer |
-| **GC Pressure** | Extreme (String per char) | High (Text cells) | Moderate | 0 Allocations / Frame (Zero-Copy) |
-| **Target Frame Rate** | 10–20 FPS | 15–30 FPS | 20–35 FPS | 60+ FPS Constant |
+| Feature | Pure Java ASCII 3D | Curses / Lanterna Wrappers | FastTerminal3D |
+|:---|:---|:---|:---|
+| **Color Fidelity** | 1-bit or 16-color ANSI | 16 / 256 Colors | **24-bit True Color (SSAA)** |
+| **Rasterization Engine** | Pure Java (Single-thread) | Software CPU cell blit | **SIMD AVX2 + Multi-Threaded Tiling** |
+| **Resolution Density** | 1 character per pixel | 1 cell per pixel | Half-block (2 px/cell) + SSAA |
+| **Z-Buffering / Depth** | None / coarse `float[]` | ❌ None | **32-bit Native Z-Buffer** |
+| **GC Pressure** | Extreme (String per char) | High (Cell object churn) | **0 bytes / frame (Zero-Copy)** |
+| **Target Frame Rate** | 10–20 FPS | 15–30 FPS | **60+ FPS Constant** |
 
 ---
 
