@@ -1,0 +1,17 @@
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Build artifacts
+target/
+**/target/
+build/
+**/build/
+out/
+**/out/
+*.class
+*.jar
+cp.txt
+output.txt
+Repo/
