@@ -236,11 +236,12 @@ Download the latest pre-compiled JARs directly:
 
 | Platform | Architecture | Status | Notes |
 |:---|:---|:---|:---|
-| Windows 10/11 | x64 | ✅ Fully Supported | Native Windows Terminal / ConPTY True Color support |
-| Linux | x64, ARM64 | ✅ Fully Supported | Xterm / Kitty / Alacritty 24-bit ANSI support |
-| macOS | Apple Silicon, x64 | ✅ Fully Supported | Terminal.app / iTerm2 24-bit ANSI support |
+| Windows 10/11 | x64 | ✅ Fully Supported | Native Windows Terminal / ConPTY True Color & Win32 Console blit |
+| Linux | x64, ARM64 | 🚧 Planned | Dependent on FastTerminal POSIX ANSI / TTY pipeline |
+| macOS | Apple Silicon, x64 | 🚧 Planned | Dependent on FastTerminal POSIX PTY pipeline |
 
 ---
+
 
 ## License
 
