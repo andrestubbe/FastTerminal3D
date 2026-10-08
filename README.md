@@ -251,10 +251,14 @@ MIT License — See [LICENSE](LICENSE) file for details.
 
 ## Related Projects
 
+- [FastANSI](https://github.com/andrestubbe/FastANSI) — Zero-allocation ANSI and VT100/VT220 escape sequence parser and compositor
+- [FastASCII](https://github.com/andrestubbe/FastASCII) — Zero-allocation ASCII/UTF-8 byte engine and primitive parser
+- [FastCLICommand](https://github.com/andrestubbe/FastCLICommand) — Zero-allocation, ultra-fast command-line parser and dispatcher
+- [FastConPTY](https://github.com/andrestubbe/FastConPTY) — High-performance native Windows ConPTY pseudo-terminal backend
+- [FastTerminal](https://github.com/andrestubbe/FastTerminal) — High-performance True-Color double-buffered terminal rendering engine
+- [FastTUI](https://github.com/andrestubbe/FastTUI) — High-performance native Windows TUI framework with mouse support and widgets
 - [FastSoftware3D](https://github.com/andrestubbe/FastSoftware3D) — AVX2 multi-threaded software 3D rasterization engine
-- [FastTerminal](https://github.com/andrestubbe/FastTerminal) — High-performance double-buffered TUI terminal engine
-- [FastANSI](https://github.com/andrestubbe/FastANSI) — High-performance terminal ANSI compositor
-- [FastCore](https://github.com/andrestubbe/FastCore) — Unified JNI loader and platform abstraction
+- [FastCore](https://github.com/andrestubbe/FastCore) — Native library loader, FFM gateway, and platform abstraction layer
 
 ---
 
